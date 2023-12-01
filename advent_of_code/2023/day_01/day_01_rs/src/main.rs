@@ -53,8 +53,29 @@ mod tests {
 
     #[test]
     fn line_digits_correct() {
-        let input = "1abc2\npqr3stu8vwx\na1b2c3d4e5f\ntreb7uchet";
+        let input = "1abc2
+        pqr3stu8vwx
+        a1b2c3d4e5f
+        treb7uchet";
         let correct = [12, 38, 15, 77];
+        let all_pass = input
+        .lines()
+        .map(line_to_digit)
+        .zip(correct.iter())
+        .all(|(answer, correct)| answer == *correct);
+        assert!(all_pass);
+    }
+
+    #[test]
+    fn line_digits_correct2() {
+        let input = "two1nine
+        eightwothree
+        abcone2threexyz
+        xtwone3four
+        4nineeightseven2
+        zoneight234
+        7pqrstsixteen";
+        let correct = [29, 83, 13, 24, 42, 14, 76];
         let all_pass = input
         .lines()
         .map(line_to_digit)
