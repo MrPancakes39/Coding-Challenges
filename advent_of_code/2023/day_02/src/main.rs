@@ -26,13 +26,14 @@ impl FromStr for Balls {
     }
 }
 
-struct BallsLimit {
+#[derive(Debug, Default)]
+struct BallsCounter {
     red: u32,
     green: u32,
     blue: u32,
 }
 
-const BALL_COUNT: BallsLimit = BallsLimit {
+const BALL_COUNT: BallsCounter = BallsCounter {
     red: 12,
     green: 13,
     blue: 14,
@@ -63,7 +64,7 @@ fn is_game_possible(game: &str) -> (u32, bool) {
     (game_id, !has_over)
 }
 
-fn main() {
+fn part1() {
     let part1 = INPUT
         .lines()
         .filter_map(|game| {
@@ -75,4 +76,41 @@ fn main() {
         })
         .sum::<u32>();
     println!("Part 1: {:?}", part1);
+}
+
+fn game_min_balls(game: &str) -> BallsCounter {
+    let (_, game_info) = game.split_once(": ").unwrap();
+    game_info
+        .split("; ")
+        .map(|pick| {
+            let mut ball_count = BallsCounter::default();
+            pick.split(", ")
+                .map(|ball_str| ball_str.parse::<Balls>().unwrap())
+                .for_each(|ball| match ball {
+                    Balls::Red(count) => ball_count.red = count,
+                    Balls::Green(count) => ball_count.green = count,
+                    Balls::Blue(count) => ball_count.blue = count,
+                    Balls::Unknown => panic!("Shouldn't get here"),
+                });
+            ball_count
+        })
+        .reduce(|acc, e| BallsCounter {
+            red: acc.red.max(e.red),
+            green: acc.green.max(e.green),
+            blue: acc.blue.max(e.blue),
+        })
+        .unwrap()
+}
+
+fn part2() {
+    let part2 = INPUT
+        .lines()
+        .map(game_min_balls)
+        .map(|counter| counter.red * counter.green * counter.blue)
+        .sum::<u32>();
+    println!("Part 2: {:?}", part2);
+}
+
+fn main() {
+    part2();
 }
