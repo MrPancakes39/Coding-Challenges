@@ -123,8 +123,45 @@ fn part1(input: &str) -> usize {
     count
 }
 
+fn part2(input: &str) -> usize {
+    let mut count: usize = 0;
+    let matrix: Vec<Vec<char>> = input.lines().map(|l| l.chars().collect()).collect();
+
+    for (i, row) in matrix.iter().enumerate() {
+        for (j, cell) in row.iter().enumerate() {
+            if cell != &'A' {
+                continue;
+            }
+
+            if i.checked_sub(1).is_none()
+                || i.checked_add(1).is_none()
+                || j.checked_sub(1).is_none()
+                || j.checked_add(1).is_none()
+            {
+                continue;
+            }
+
+            if (i + 1) == matrix.len() || (j + 1) == matrix[0].len() {
+                continue;
+            }
+
+            let diagonal_1 = (matrix[i - 1][j - 1] == 'M' && matrix[i + 1][j + 1] == 'S')
+                || (matrix[i - 1][j - 1] == 'S' && matrix[i + 1][j + 1] == 'M');
+            let diagonal_2 = (matrix[i - 1][j + 1] == 'M' && matrix[i + 1][j - 1] == 'S')
+                || (matrix[i - 1][j + 1] == 'S' && matrix[i + 1][j - 1] == 'M');
+
+            if diagonal_1 && diagonal_2 {
+                count += 1;
+            }
+        }
+    }
+
+    count
+}
+
 fn main() {
-    let answer = part1(INPUT);
+    // let answer = part1(INPUT);
+    let answer = part2(INPUT);
     println!("Answer: {}", answer);
 }
 
@@ -135,5 +172,10 @@ mod tests {
     #[test]
     fn test() {
         assert_eq!(18, part1(EX));
+    }
+
+    #[test]
+    fn test2() {
+        assert_eq!(9, part2(EX));
     }
 }
