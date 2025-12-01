@@ -1,6 +1,6 @@
 // https://adventofcode.com/2025/day/1
 
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr};
 
 const MOD: u8 = 100;
 
@@ -44,23 +44,46 @@ impl FromStr for Rotation {
     }
 }
 
+impl Display for Rotation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Rotation::Left(n) => write!(f, "L{n}"),
+            Rotation::Right(n) => write!(f, "R{n}"),
+        }
+    }
+}
+
 // ====================================================================================================
 
-fn part1(initial_count: u16, input: &str) -> u16 {
+fn solution(initial_count: u16, input: &str) -> (u16, u16) {
     let mut count: i32 = initial_count as i32;
     let mut num_zero = 0;
+    let mut num_point = 0;
+
+    // println!("The dial starts by pointing at {count}.");
 
     for line in input.lines() {
+        let current_count = count;
         let rotation = line.parse::<Rotation>().unwrap();
 
-        match rotation {
+        let rot_count = match rotation {
             Rotation::Left(n) => {
                 count -= n as i32;
+                if count < 0 && current_count != 0 {
+                    i32::abs(count) / MOD as i32 + 1
+                } else {
+                    0
+                }
             }
             Rotation::Right(n) => {
                 count += n as i32;
+                if count > MOD as i32 {
+                    i32::abs(count) / MOD as i32
+                } else {
+                    0
+                }
             }
-        }
+        };
 
         // Keep it between 0 and MOD
         while count < 0 {
@@ -73,13 +96,24 @@ fn part1(initial_count: u16, input: &str) -> u16 {
         if count == 0 {
             num_zero += 1;
         }
+
+        // print!("The dial is rotated {rotation} to point at {count}");
+        // if rot_count > 0 {
+        //     println!(" during this rotation, it points at zero {rot_count} time(s).");
+        // } else {
+        //     println!(".");
+        // }
+
+        num_point += rot_count as u16;
     }
 
-    num_zero
+    (num_zero, num_point)
 }
 
 fn main() {
-    println!("Part 1: {}", part1(50, INPUT));
+    let result = solution(50, INPUT);
+    println!("Part 1: {}", result.0);
+    println!("Part 2: {}", result.1);
 }
 
 #[cfg(test)]
@@ -97,7 +131,41 @@ mod test {
 
     #[test]
     fn can_solve_part1() {
-        let result = part1(50, EX);
-        assert_eq!(result, 3);
+        let (solution, _) = solution(50, EX);
+        assert_eq!(solution, 3);
+    }
+
+    #[test]
+    fn point_to_zero() {
+        let count = 50;
+        let rot = -68;
+        let new_count = count + rot;
+        let rot_count = i32::abs(new_count) / MOD as i32 + 1;
+        assert_eq!(rot_count, 1);
+
+        let count = 95;
+        let rot = 60;
+        let new_count = count + rot;
+        let rot_count = i32::abs(new_count) / MOD as i32;
+        assert_eq!(rot_count, 1);
+
+        let count = 14;
+        let rot = -82;
+        let new_count = count + rot;
+        let rot_count = i32::abs(new_count) / MOD as i32 + 1;
+        assert_eq!(rot_count, 1);
+
+        let count = 50;
+        let rot = 1000;
+        let new_count = count + rot;
+        let rot_count = i32::abs(new_count) / MOD as i32;
+        assert_eq!(rot_count, 10);
+    }
+
+    #[test]
+    fn can_solve_part2() {
+        let solution = solution(50, EX);
+        let solution = solution.0 + solution.1;
+        assert_eq!(solution, 6);
     }
 }
